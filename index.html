@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Resize</title>
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #container {
+            text-align: center;
+        }
+
+        #previewContainer {
+            margin-top: 20px;
+        }
+
+        #previewImage {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <h1>Image Upload and Resize</h1>
+
+        <input type="file" id="imageInput" accept="image/*" capture="environment" />
+        <button onclick="resizeAndUpload()">Upload and Resize</button>
+
+        <div id="previewContainer">
+            <h2>Preview</h2>
+            <img id="previewImage" />
+        </div>
+    </div>
+
+    <script>
+        function resizeAndUpload() {
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Set the maximum dimensions for resizing
+                        const maxWidth = 800;
+                        const maxHeight = 600;
+
+                        // Calculate new dimensions while maintaining aspect ratio
+                        let newWidth = img.width;
+                        let newHeight = img.height;
+
+                        if (img.width > maxWidth) {
+                            newWidth = maxWidth;
+                            newHeight = (newWidth / img.width) * img.height;
+                        }
+
+                        if (newHeight > maxHeight) {
+                            newHeight = maxHeight;
+                            newWidth = (newHeight / img.height) * img.width;
+                        }
+
+                        // Resize the image
+                        canvas.width = newWidth;
+                        canvas.height = newHeight;
+                        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+                        // Display the preview
+                        const previewImage = document.getElementById('previewImage');
+                        const previewBlob = canvas.toBlob(function (blob) {
+                            const previewUrl = URL.createObjectURL(blob);
+                            previewImage.src = previewUrl;
+
+                            // Upload the resized image
+                            const formData = new FormData();
+                            formData.append('photo', blob, 'resized_image.jpg');
+
+                            fetch('upload.php', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.text())
+                            .then(result => {
+                                console.log(result);
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                        }, 'image/jpeg', 1); // 1 represents image quality (adjust as needed)
+                    };
+                };
+
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+
+</body>
+</html>
