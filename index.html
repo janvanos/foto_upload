@@ -7,6 +7,7 @@
 
     <style>
         body {
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -32,17 +33,23 @@
 
     <div id="container">
         <h1>Image Upload and Resize</h1>
+        <div id="buttons">
+            <input type="file" id="imageInput" accept="image/*" capture="environment" onchange="chosen()" />
+            <button id="upload" style="display: none;" onclick="resizeAndUpload()">Upload</button>    
+        </div>
 
-        <input type="file" id="imageInput" accept="image/*" capture="environment" />
-        <button onclick="resizeAndUpload()">Upload and Resize</button>
-
-        <div id="previewContainer">
-            <h2>Preview</h2>
+        <div id="previewContainer" style="display: none;">
+            <h2><a href="">Nog een keer</a></h2>
             <img id="previewImage" />
         </div>
     </div>
 
     <script>
+
+        function chosen(){
+            document.getElementById("imageInput").style.display="none";
+            document.getElementById("upload").style.display="inline-block";
+        }
         function resizeAndUpload() {
             const input = document.getElementById('imageInput');
             const file = input.files[0];
@@ -83,6 +90,9 @@
 
                         // Display the preview
                         const previewImage = document.getElementById('previewImage');
+                        document.getElementById("previewContainer").style.display = "block";
+                        document.getElementById("buttons").style.display="none";
+
                         const previewBlob = canvas.toBlob(function (blob) {
                             const previewUrl = URL.createObjectURL(blob);
                             previewImage.src = previewUrl;
